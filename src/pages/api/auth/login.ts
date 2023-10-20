@@ -97,13 +97,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(405).json({ message: "Method Not Allowed!" })
     }
 }
-
-export const config = {
-    api: {
-        bodyParser: {
-            sizeLimit: "1mb",
-        },
-    },
-    // Specifies the maximum allowed duration for this function to execute (in seconds)
-    maxDuration: 5,
-}

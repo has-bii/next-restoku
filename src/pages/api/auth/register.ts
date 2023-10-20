@@ -23,15 +23,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 })
 
             // Check if the email exists
-            const isExist = await prisma.user.findUnique({ where: { email: body.email } })
+            const isExist = await prisma.user.findUnique({
+                where: { email: body.email.toLowerCase() },
+            })
             if (isExist) return res.status(400).json({ message: "Email is already in use!" })
 
             // Create user
             await prisma.user
                 .create({
                     data: {
-                        name: body.name,
-                        email: body.email,
+                        name: body.name.toLowerCase(),
+                        email: body.email.toLowerCase(),
                         password: bcrypt.hashSync(body.password, KEY.getSalt()),
                     },
                 })

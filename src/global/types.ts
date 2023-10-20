@@ -26,3 +26,11 @@ export interface ICookieOptions {
     expires?: Date
     [key: string]: any
 }
+
+export interface IUser {
+    id: number
+    name: string
+    email: string
+    role: string
+    isVerified: boolean
+}
