@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique @db.VarChar(255)
+  name       String    @db.VarChar(255)
+  password   String    @db.VarChar(255)
+  role       Role      @default(USER)
+  isVerified Boolean   @default(false) @map("is_verified")
+  picture    String?   @db.VarChar(255)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt  DateTime? @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  menus      Menu[]
+  categories Category[]
+
+  @@map("users")
+}
+
+model Token {
+  id     Int      @id @default(autoincrement())
+  userId Int      @unique @map("user_id")
+  token  String   @db.VarChar(255)
+  expire DateTime @db.Timestamptz()
+
+  @@map("tokens")
+}
+
+model Menu {
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(255)
+  desc       String?   @db.Text
+  userId     Int       @map("user_id")
+  categoryId Int       @map("category_id")
+  price      Float     @db.DoublePrecision
+  picture    String?   @db.VarChar(255)
+  createdAt  DateTime  @map("created_at") @db.Timestamptz()
+  updatedAt  DateTime? @map("updated_at") @db.Timestamptz()
+
+  // Relation
+  user     User     @relation(fields: [userId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@map("menus")
+}
+
+model Category {
+  id     Int    @id @default(autoincrement())
+  name   String @unique @db.VarChar(255)
+  userId Int    @map("user_id")
+
+  // Relations
+  menus Menu[]
+  user  User   @relation(fields: [userId], references: [id])
+
+  @@map("categories")
+}
