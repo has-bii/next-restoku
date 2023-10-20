@@ -2,21 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import prisma from "@/lib/prisma"
 import bcrypt from "bcrypt"
 import KEY from "@/utils/key"
-
-interface IUserReq {
-    email: string
-    password: string
-}
-
-interface IUserRegister extends IUserReq {
-    name: string
-}
-
-interface ICookieOptions {
-    secure: boolean
-    domain: string
-    expires?: Date
-}
+import { IUserRegister } from "@/global/types"
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "POST") {

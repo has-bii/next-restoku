@@ -3,24 +3,7 @@ import prisma from "@/lib/prisma"
 import bcrypt from "bcrypt"
 import KEY from "@/utils/key"
 import jwt from "jsonwebtoken"
-
-interface IUserReq {
-    email: string
-    password: string
-}
-
-interface IUserRegister extends IUserReq {
-    name: string
-}
-
-interface ICookieOptions {
-    secure: boolean
-    sameSite: boolean
-    httpOnly: boolean
-    path: string
-    expires?: Date
-    [key: string]: any
-}
+import { ICookieOptions, IUserReq } from "@/global/types"
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "POST") {
