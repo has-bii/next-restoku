@@ -4,6 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next"
 import bcrypt from "bcrypt"
 import KEY from "@/utils/key"
 import formidable from "formidable"
+import fs, { existsSync, unlinkSync } from "fs"
 
 type TEditBody = {
     name?: string
@@ -19,29 +20,36 @@ export const config = {
     },
 }
 
+const formOptions: formidable.Options = {
+    maxFiles: 1,
+    maxFileSize: 5 * 1024 * 1024,
+    uploadDir: __dirname,
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "PUT") {
         try {
             const user = await verifyToken(req)
             const body: TEditBody = {}
-
-            const form = formidable({ maxFiles: 1, maxFileSize: 5 * 1024 * 1024 })
-
-            form.parse(req, (err, fields, files) => {
-                if (err) return res.status(500).json({ message: "Error while parsing data!" })
-
-                for (let key in fields) {
-                    body[key] = fields[key]?.toString()
-                }
-
-                console.log("files: ", files)
-            })
-
-            // const picture = req.files?.picture as UploadedFile
-
-            const publicPath = "public"
+            const dirPath = "public/images/profile/"
             let uploadPath = ""
+            let fileName = ""
+            let image: formidable.File | null = null
 
+            const form = formidable(formOptions)
+
+            // Parse form data
+            const [fields, files] = await form.parse(req)
+
+            for (let key in fields) {
+                body[key] = fields[key]?.toString()
+            }
+
+            if (files.image) {
+                image = files.image[0]
+            }
+
+            // find user record
             const userRecord = await prisma.user.findUniqueOrThrow({ where: { id: user.id } })
 
             // Change password or email schema
@@ -54,30 +62,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     return res.status(400).json({ message: "Invalid password!" })
             }
 
-            // // Change picture schema
-            // if (picture) {
-            //     const allowedMimeTypes = ["image/jpeg", "image/png"]
+            // Change picture schema
+            if (image !== null) {
+                const allowedMimeTypes = ["image/jpeg", "image/png"]
 
-            //     // Check type of picture
-            //     if (!allowedMimeTypes.includes(picture.mimetype)) {
-            //         return res
-            //             .status(400)
-            //             .json({ message: "Invalid file type. Allowed types are: JPEG & PNG" })
-            //     }
+                // Check type of picture
+                if (!allowedMimeTypes.includes(image.mimetype !== null ? image.mimetype : "")) {
+                    return res
+                        .status(400)
+                        .json({ message: "Invalid file type. Allowed types are: JPEG & PNG" })
+                }
 
-            //     // Define uploading path
-            //     uploadPath = "/photos/" + `${user.id}_photo.${picture.mimetype.split("/")[1]}`
+                // Define uploading path
+                fileName =
+                    `${userRecord.id}_` + image.newFilename + image.mimetype?.replace("image/", ".")
+                uploadPath = dirPath + fileName
 
-            //     // Move file to public/picture
-            //     picture.mv(publicPath + uploadPath, (err: any) => {
-            //         if (err) {
-            //             return res.status(500).json({ message: "Error uploading file." })
-            //         }
-            //     })
+                fs.rename(image.filepath, uploadPath, (err) => {
+                    if (err) {
+                        console.error("Error while moving file! ", err)
+                        return res.status(500).json({ error: "File upload failed." })
+                    }
+                })
 
-            //     if (userRecord.picture && existsSync(publicPath + userRecord.picture))
-            //         unlinkSync(publicPath + userRecord.picture)
-            // }
+                if (existsSync("public" + userRecord.picture))
+                    unlinkSync("public" + userRecord.picture)
+            }
 
             // Change name user
             await prisma.user
@@ -89,7 +99,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         password: body.password
                             ? bcrypt.hashSync(body.password, KEY.getSalt())
                             : userRecord.password,
-                        picture: uploadPath ? uploadPath : userRecord.picture,
+                        picture: uploadPath ? uploadPath.replace("public", "") : userRecord.picture,
                         updatedAt: new Date(),
                     },
                 })
