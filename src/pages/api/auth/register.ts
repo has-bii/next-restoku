@@ -44,6 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // return response
             return res.status(201).json({ message: "User has been created." })
         } catch (error) {
+            console.error("Error while registering an user: ", error)
             return res.status(500).json({ message: "Server error!" })
         }
     } else {

@@ -89,9 +89,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 res.status(500).json({ message: "Failed to create token" })
             }
         } catch (error) {
-            res.status(500).json({ message: "Failed to login! Unexpected error has occurred." })
-
             console.error("Failed to login", error)
+
+            return res
+                .status(500)
+                .json({ message: "Failed to login! Unexpected error has occurred." })
         }
     } else {
         return res.status(405).json({ message: "Method Not Allowed!" })
