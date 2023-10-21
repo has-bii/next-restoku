@@ -1,20 +1,34 @@
-// import fs from "fs"
+import fs from "fs"
+import crypto from "crypto"
 // import path from "path"
 import bcrypt from "bcrypt"
 
-const salt = bcrypt.genSaltSync(10)
+// const SECRET_KEY_PATH = path.join(__dirname, "../../key/secret_key.text")
+const SECRET_KEY_PATH = "key/secret_key.text"
 
-export default class KEY {
-    static getSecret() {
-        const SECRET_KEY = process.env.SECRET_KEY || "MY_53cR3t-K3Y"
+export async function getSecretKey() {
+    try {
+        if (!fs.existsSync(SECRET_KEY_PATH)) {
+            const secretKey = crypto.randomBytes(32).toString("hex")
+            fs.writeFileSync(SECRET_KEY_PATH, secretKey, "utf-8")
+            console.log("Secret Key generated successfully")
+            return secretKey
+        }
 
-        return SECRET_KEY
+        const secretKey = fs.readFileSync(SECRET_KEY_PATH, "utf-8")
+
+        if (secretKey.length > 0) return secretKey
+
+        throw new Error("secret_key.txt is empty!")
+    } catch (error) {
+        console.error("Failed to generate Secret Key!", error)
+
+        throw error
     }
+}
 
-    static getSalt() {
-        // const SALT_KEY = process.env.SALT_KEY || "mY_54lt-K3y"
-        const SALT_KEY = salt
+export async function getSaltKey() {
+    const SALT_KEY = bcrypt.genSaltSync(10)
 
-        return SALT_KEY
-    }
+    return SALT_KEY
 }

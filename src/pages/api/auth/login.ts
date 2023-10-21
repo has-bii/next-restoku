@@ -1,9 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 import prisma from "@/lib/prisma"
 import bcrypt from "bcrypt"
-import KEY from "@/utils/key"
 import jwt from "jsonwebtoken"
 import { ICookieOptions, IUserReq } from "@/global/types"
+import { getSecretKey } from "@/utils/key"
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "POST") {
@@ -42,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // Create token
             const token = jwt.sign(
                 { id: data.id, name: data.name, email: data.email },
-                KEY.getSecret(),
+                await getSecretKey(),
                 { algorithm: "HS256" }
             )
 

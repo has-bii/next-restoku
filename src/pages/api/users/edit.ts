@@ -2,9 +2,9 @@ import prisma from "@/lib/prisma"
 import verifyToken from "@/utils/verifyToken"
 import { NextApiRequest, NextApiResponse } from "next"
 import bcrypt from "bcrypt"
-import KEY from "@/utils/key"
 import formidable from "formidable"
 import fs, { existsSync, unlinkSync } from "fs"
+import { getSaltKey } from "@/utils/key"
 
 type TEditBody = {
     name?: string
@@ -97,7 +97,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         name: body.name ? body.name : userRecord.name,
                         email: body.email ? body.email : userRecord.email,
                         password: body.password
-                            ? bcrypt.hashSync(body.password, KEY.getSalt())
+                            ? bcrypt.hashSync(body.password, await getSaltKey())
                             : userRecord.password,
                         picture: uploadPath ? uploadPath.replace("public", "") : userRecord.picture,
                         updatedAt: new Date(),

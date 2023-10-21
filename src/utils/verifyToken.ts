@@ -1,14 +1,14 @@
 import jwt from "jsonwebtoken"
-import KEY from "./key"
 import prisma from "@/lib/prisma"
 import { IUser } from "@/global/types"
 import { NextApiRequest } from "next"
+import { getSecretKey } from "./key"
 
 export default async function verifyToken(req: NextApiRequest): Promise<IUser> {
     const tokenJWT = req.cookies["user_access"] as string
 
     // Verifying token
-    const jwtPayload: any = jwt.verify(tokenJWT, KEY.getSecret())
+    const jwtPayload: any = jwt.verify(tokenJWT, await getSecretKey())
     // Find user
     const user = await prisma.user.findUnique({
         where: { id: jwtPayload.id },

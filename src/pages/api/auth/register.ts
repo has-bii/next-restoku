@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 import prisma from "@/lib/prisma"
 import bcrypt from "bcrypt"
-import KEY from "@/utils/key"
 import { IUserRegister } from "@/global/types"
+import { getSaltKey } from "@/utils/key"
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "POST") {
@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     data: {
                         name: body.name.toLowerCase(),
                         email: body.email.toLowerCase(),
-                        password: bcrypt.hashSync(body.password, KEY.getSalt()),
+                        password: bcrypt.hashSync(body.password, await getSaltKey()),
                     },
                 })
                 .catch((error: any) => {
