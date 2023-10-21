@@ -1,3 +1,5 @@
+import { Role } from "@prisma/client"
+
 export type ToastStatus = "danger" | "error" | "normal" | "success"
 
 export interface IToastContext {
@@ -33,4 +35,17 @@ export interface IUser {
     email: string
     role: string
     isVerified: boolean
+}
+
+export type TEditBody = {
+    name?: string
+    email?: string
+    password?: string
+    newPassword?: string
+    [key: string]: any
+}
+
+export type TEditUsersBody = TEditBody & {
+    id: string[]
+    role: Role
 }

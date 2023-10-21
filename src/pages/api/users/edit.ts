@@ -5,14 +5,7 @@ import bcrypt from "bcrypt"
 import formidable from "formidable"
 import fs, { existsSync, unlinkSync } from "fs"
 import { getSaltKey } from "@/utils/key"
-
-type TEditBody = {
-    name?: string
-    email?: string
-    password?: string
-    newPassword?: string
-    [key: string]: any
-}
+import { TEditBody } from "@/global/types"
 
 export const config = {
     api: {
